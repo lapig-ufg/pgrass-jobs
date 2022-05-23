@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "pgrass-jobs"
+version = "0.1.0"
+description = ""
+authors = ["Jairo Matos da Rocha <jairo@discente.ufg.br>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+bjson = "^0.2.9"
+dynaconf = "^3.1.8"
+rasterio = "1.3a4"
+pyproj = "^3.3.1"
+geopandas = "^0.10.2"
+pystac-client = "0.3.2"
+pydantic = "^1.9.0"
+loguru = "^0.6.0"
+motor = "<3.0.0"
+beanie = "^1.11.0"
+
+[tool.poetry.dev-dependencies]
+blue = "^0.9.0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
