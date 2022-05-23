@@ -41,7 +41,7 @@ FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # Clone app and npm install on server
-ENV URL_TO_APPLICATION_GITHUB="https://github.com/lapig-ufg/pgrass.git"
+ENV URL_TO_APPLICATION_GITHUB="https://github.com/lapig-ufg/pgrass-jobs.git"
 ENV BRANCH="main"
 
 RUN apt-get update && apt-get install -y git && git clone -b ${BRANCH} ${URL_TO_APPLICATION_GITHUB} && \
