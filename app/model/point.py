@@ -9,8 +9,6 @@ from bson import ObjectId
 from app.model.functions import get_id
 
 
-
-
 class SatelliteEnum(str, Enum):
     sentinel_s2_l2a_cogs = 'sentinel-s2-l2a-cogs'
 
