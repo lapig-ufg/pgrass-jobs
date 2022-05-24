@@ -10,6 +10,7 @@ db = client.pgrass
 
 db_points = db.points
 db_timeseires = db.timeseires
+db_features = db.features
 teste = db.teste
 
 

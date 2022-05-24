@@ -1,7 +1,7 @@
 from dynaconf import Dynaconf
 from loguru import logger
 
-logger.add("../logs/jobs.log")
+logger.add("jobs.log")
 
 settings = Dynaconf(
     envvar_prefix="PGRASS",

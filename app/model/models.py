@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, List, Union
 from bson import ObjectId
 
-from app.model.functions import get_id
+from app.model.functions import get_id, get_id_by_lon_lat
 
 
 class SatelliteEnum(str, Enum):
@@ -29,7 +29,10 @@ class SatelliteEnum(str, Enum):
 		}
 	},
 """
-class Point(MongoModel):
+class Feature(MongoModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    gid: int
+    file_name: str = ''
     biome: str
     municipally:str
     state: str
@@ -41,10 +44,11 @@ class Point(MongoModel):
     dfields: Dict
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        from hashlib import shake_256
-        self.point_id = get_id(f"{self.lon:.5f}{self.lat:.5f}")
-        self.geometry = f'POINT ({self.lon:.5f} {self.lat:.5f},)'
-
+        self.id = get_id(f'{self.file_name}{self.gid}')
+        self.point_id = get_id_by_lon_lat(self.lon,self.lat)
+        self.geometry = f'POINT ({self.lon:.5f} {self.lat:.5f}, {self.epsg})'
+        
+    
 """
 	{
 		"point_id": "XXXXXXXXXXXXXXX",
