@@ -32,7 +32,7 @@ def to_dict(args):
     return timeserires
 
 
-async def get_sentinel2(lon,lat,date='2022-05-01'):
+async def get_sentinel2(lon,lat,date='2013-05-01'):
     now = datetime.now()
     catalog_url = "https://earth-search.aws.element84.com/v0"
     catalog = Client.open(catalog_url)
@@ -78,14 +78,16 @@ async def get_sentinel2(lon,lat,date='2022-05-01'):
                 values = [information[1] for  information in  json_timeseries[band]],
                 cogs = [information[2] for  information in  json_timeseries[band]]
                 )      
-            timesereis_final.append(tmp.mongo())
+            try:
+                result2 = await db_timeseires.insert_one(tmp.mongo())
+                logger.debug('save in mongo {tmp}')
+            except DuplicateKeyError:
+                logger.warning('TimeSerie exeiste')
+            except:
+              logger.exception('fall inset in mongodb')   
         except:
             logger.warning([information[1] for  information in  json_timeseries[band]])
             logger.exception('Time series not created')      
-    logger.debug(f'{json_timeseries}')
     
-    try:
-        result2 = await db_timeseires.insert_many(timesereis_final)
-    except Exception as e:
-        logger.exception('fall inset in mongodb')
+   
     
