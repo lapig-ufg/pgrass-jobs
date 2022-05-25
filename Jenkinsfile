@@ -5,7 +5,7 @@ node {
 
         stage('Checkout') {
             git branch: 'main',
-            url: 'https://github.com/lapig-ufg/pgrass-server.git'
+            url: 'https://github.com/lapig-ufg/pgrass-jobs.git'
         }
         stage('Validate') {
             sh 'git pull origin main'
@@ -24,6 +24,7 @@ node {
                     }
         }
         stage('Building Image') {
+	    sh 'docker builder prune -f'
             dockerImage = docker.build registryHOMOL + "/$application_name:$BUILD_NUMBER", "--build-arg  --no-cache -f Dockerfile ."
         }
         stage('Push Image to Registry') {
