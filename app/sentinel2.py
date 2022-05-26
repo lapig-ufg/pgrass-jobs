@@ -8,6 +8,7 @@ from app.model.models import TimeSerie, Feature
 from app.model.functions import get_id_by_lon_lat
 from app.db import db_points, db_timeseires
 from pymongo.errors import DuplicateKeyError
+from app.fuctions import is_tif
 
 def read_pixel(asset, _datetime, url, lon, lat, epsg='32721'):
     transformer = Transformer.from_crs("epsg:4326", f"epsg:{epsg}", always_xy=True)
@@ -23,13 +24,16 @@ def to_dict(args):
 
     for asset in assets:
         try:
-            if assets[asset].roles[0] == 'data':
-                timeserires.append(
-                    read_pixel(asset, item.datetime, assets[asset].href,lon,lat)
-                )
-                logger.debug(f'cooder:{(lon,lat)} asset:{asset} url:{assets[asset].href}')
+            if is_tif(assets[asset].href):
+                try:
+                    timeserires.append(
+                        read_pixel(asset, item.datetime, assets[asset].href,lon,lat)
+                    )
+                    logger.debug(f'cooder:{(lon,lat)} asset:{asset} url:{assets[asset].href}')
+                except:
+                    logger.exception('Error in get data in pixel')
         except:
-            logger.exception('Error get pixel')
+            logger.exception('Error is tif')
     logger.info(f'Time {timeserires}')
     return timeserires
 
