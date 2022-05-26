@@ -22,12 +22,14 @@ def to_dict(args):
     timeserires = []
 
     for asset in assets:
-        if assets[asset].roles[0] == 'data':
-            timeserires.append(
-                read_pixel(asset, item.datetime, assets[asset].href,lon,lat)
-            )
-            logger.debug(f'cooder:{(lon,lat)} asset:{asset} url:{assets[asset].href}')
-    
+        try:
+            if assets[asset].roles[0] == 'data':
+                timeserires.append(
+                    read_pixel(asset, item.datetime, assets[asset].href,lon,lat)
+                )
+                logger.debug(f'cooder:{(lon,lat)} asset:{asset} url:{assets[asset].href}')
+        except:
+            logger.exception('Error get pixel')
     logger.info(f'Time {timeserires}')
     return timeserires
 
@@ -82,7 +84,7 @@ async def get_sentinel2(lon,lat,date='2013-05-01'):
                 result2 = await db_timeseires.insert_one(tmp.mongo())
                 logger.debug('save in mongo {tmp}')
             except DuplicateKeyError:
-                result2 = await db_timeseires.update_one({"_id": tmp.id}, {"$set": tmp.dict()})
+                result2 = await db_timeseires.update_one({"_id": tmp.id}, {"$set": tmp.mongo()})
                 logger.warning('TimeSerie exeiste')
             except:
               logger.exception('fall inset in mongodb')   
