@@ -9,6 +9,7 @@ from app.model.functions import get_id_by_lon_lat
 from app.db import db_points, db_timeseires
 from pymongo.errors import DuplicateKeyError
 from app.fuctions import is_tif
+from rasterio._err import CPLE_HttpResponseError
 
 def read_pixel(asset, _datetime, url, lon, lat, epsg='32721'):
     transformer = Transformer.from_crs("epsg:4326", f"epsg:{epsg}", always_xy=True)
@@ -29,7 +30,9 @@ def to_dict(args):
                     timeserires.append(
                         read_pixel(asset, item.datetime, assets[asset].href,lon,lat)
                     )
-                    logger.debug(f'cooder:{(lon,lat)} asset:{asset} url:{assets[asset].href}')
+                    logger.debug(f'cooder:{(lon,lat)} url:{assets[asset].href}')
+                except CPLE_HttpResponseError:
+                    logger.error(f'url:{assets[asset].href} lon:{lon} lat:{lat} ')
                 except:
                     logger.exception('Error in get data in pixel')
         except:
