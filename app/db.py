@@ -1,8 +1,10 @@
+from datetime import datetime
 from .config import settings
 from bson import ObjectId
 import motor.motor_asyncio
 from datetime import datetime
 from pydantic import BaseModel, BaseConfig
+import pytz
 
 client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
 
@@ -11,8 +13,12 @@ db = client.pgrass
 db_points = db.points
 db_timeseires = db.timeseires
 db_features = db.features
+db_dataset = db.dataset
 teste = db.teste
 
+
+def get_datetime_to_mongo():
+    return datetime.now().astimezone(pytz.utc).isoformat()
 
 
 class PyObjectId(ObjectId):

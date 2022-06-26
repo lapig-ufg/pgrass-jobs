@@ -618,7 +618,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "fc73471b113528ebba25d9b6ce10edced5bb5862280fec86d557779c4b51f985"
+content-hash = "c4cc03b5964132d5bfaea44e53cc50ccd82c7f56b9a238b6ea7f92bf1f4b24f6"
 
 [metadata.files]
 affine = [

@@ -9,6 +9,13 @@ from bson import ObjectId
 from app.model.functions import get_id, get_id_by_lon_lat
 
 
+class JobStatusEnum(str,Enum):
+    in_queue = 'IN_QUEUE'
+    running = 'RUNNING'
+	complete = 'COMPLETE'
+    canceled = 'CANCELLED'
+    error = 'ERROR'
+
 class SatelliteEnum(str, Enum):
     sentinel_s2_l2a_cogs = 'sentinel-s2-l2a-cogs'
 
@@ -33,6 +40,7 @@ class Feature(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     gid: int
     file_name: str = ''
+    doc_id: PyObjectId
     biome: str
     municipally:str
     state: str
