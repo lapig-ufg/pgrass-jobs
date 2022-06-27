@@ -89,7 +89,7 @@ async def get_sentinel2(lon,lat,date='2013-05-01'):
                 )      
             try:
                 result2 = await db_timeseires.insert_one(tmp.mongo())
-                logger.debug('save in mongo {tmp}')
+                logger.debug(f"save in mongo {tmp['_id']}")
             except DuplicateKeyError:
                 result2 = await db_timeseires.update_one({"_id": tmp.id}, {"$set": tmp.mongo()})
                 logger.warning('TimeSerie exeiste')

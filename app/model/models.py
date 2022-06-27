@@ -39,7 +39,6 @@ class SatelliteEnum(str, Enum):
 class Feature(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     gid: int
-    file_name: str = ''
     dataset_id: PyObjectId
     biome: str
     municipally:str
