@@ -9,5 +9,6 @@ async def get_point():
             logger.debug(f"run point_id {feature['point_id']}")
             coordinate = await get_sentinel2(feature['lon'],feature['lat'])
             runs.append(str(feature['point_id']))
+            
         else:
             logger.debug(f"ignoaradp point_id {feature['point_id']}")

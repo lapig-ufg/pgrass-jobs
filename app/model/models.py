@@ -12,7 +12,7 @@ from app.model.functions import get_id, get_id_by_lon_lat
 class JobStatusEnum(str,Enum):
     in_queue = 'IN_QUEUE'
     running = 'RUNNING'
-	complete = 'COMPLETE'
+    complete = 'COMPLETE'
     canceled = 'CANCELLED'
     error = 'ERROR'
 
@@ -40,7 +40,7 @@ class Feature(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     gid: int
     file_name: str = ''
-    doc_id: PyObjectId
+    dataset_id: PyObjectId
     biome: str
     municipally:str
     state: str
@@ -50,6 +50,7 @@ class Feature(MongoModel):
     geometry: str = ''
     epsg: int
     dfields: Dict
+    next_update: datetime
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.id = get_id(f'{self.file_name}{self.gid}')

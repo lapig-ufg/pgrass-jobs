@@ -41,7 +41,7 @@ class MongoModel(BaseModel):
     class Config(BaseConfig):
         allow_population_by_field_name = True
         json_encoders = {
-            datetime: lambda dt: dt.isoformat(),
+            datetime: lambda dt: dt.astimezone(pytz.utc).isoformat(),
             ObjectId: lambda oid: str(oid),
         }
 

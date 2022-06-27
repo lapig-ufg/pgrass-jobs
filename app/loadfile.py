@@ -1,7 +1,7 @@
-from unittest.main import main
+from datetime import datetime, timedelta
 import geopandas as gpd
 from geopandas.tools import sjoin
-from app.db import db_features, db_jobs
+from app.db import db_features, db_dataset
 from app.config import logger
 from app.model.models import Feature
 
@@ -12,7 +12,7 @@ regions = regions.set_geometry('regions_geometry')
 
 
 async def get_in_quee():
-    async for doc in db_jobs.find({'job_status':'IN_QUEUE'}):
+    async for doc in db_dataset.find({'job_status':'IN_QUEUE'}):
         root ={
         "file_name":doc['file_name'],
         "dataset_id":doc['_id'],
@@ -22,7 +22,7 @@ async def get_in_quee():
         gdf = gdf.set_crs(doc['epsg'])
         status = await join_to_json(gdf,root)
         if status == True:
-            result = await db_jobs.update_one(
+            result = await db_dataset.update_one(
                     {'_id': doc['_id']}, 
                     {'$set': {'job_status': 'COMPLETE'}}
                 )
@@ -44,7 +44,8 @@ async def join_to_json(features,root_doc):
             'lon': lon,
             'epsg':epsg,
             'municipally': properties['regions_MUNICIPIO'],
-            'state': properties['regions_ESTADO']
+            'state': properties['regions_ESTADO'],
+            'next_update': datetime.now() - timedelta(days=30)
         }
         dfields = {}
         for column in features.columns:
