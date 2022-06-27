@@ -3,7 +3,8 @@
 ###############################################
 FROM python:3.10-slim as python-base
 
-ENV PYTHONUNBUFFERED=1 \
+ENV LAPIG_ENV=${LAPIG_ENV} \
+    PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
@@ -31,7 +32,7 @@ WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install 
+RUN poetry install $(test "$LAPIG_ENV" == production && echo "--no-dev") --no-interaction --no-ansi
 
 ###############################################
 # Production Image
