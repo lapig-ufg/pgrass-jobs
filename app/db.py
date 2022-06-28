@@ -1,10 +1,11 @@
 from datetime import datetime
-from .config import settings
-from bson import ObjectId
+
 import motor.motor_asyncio
-from datetime import datetime
-from pydantic import BaseModel, BaseConfig
 import pytz
+from bson import ObjectId
+from pydantic import BaseConfig, BaseModel
+
+from .config import settings
 
 client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
 
@@ -29,12 +30,12 @@ class PyObjectId(ObjectId):
     @classmethod
     def validate(cls, v):
         if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
+            raise ValueError('Invalid objectid')
         return ObjectId(v)
 
     @classmethod
     def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+        field_schema.update(type='string')
 
 
 class MongoModel(BaseModel):
@@ -47,7 +48,7 @@ class MongoModel(BaseModel):
 
     @classmethod
     def from_mongo(cls, data: dict):
-        """We must convert _id into "id". """
+        """We must convert _id into "id"."""
         if not data:
             return data
         id = data.pop('_id', None)
