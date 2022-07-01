@@ -1,11 +1,16 @@
+from cmath import log
 from datetime import datetime, timedelta
+from os import cpu_count
 
 import geopandas as gpd
 from geopandas.tools import sjoin
 
 from app.config import logger
-from app.db import db_dataset, db_features
+from app.db import db_features
 from app.model.models import Feature
+from multiprocessing import Pool
+
+
 
 regions_tmp = gpd.read_file('zip:///data/base/regions.zip').add_prefix(
     'regions_'
@@ -22,59 +27,58 @@ regions = regions_tmp[
 regions = regions.set_geometry('regions_geometry')
 
 
-async def get_in_quee():
-    async for doc in db_dataset.find({'job_status': 'IN_QUEUE'}):
-        root = {
-            'file_name': doc['file_name'],
-            'dataset_id': doc['_id'],
-            'columns': doc['columns'],
-        }
-        gdf = gpd.GeoDataFrame.from_features(doc['features']).set_geometry(
-            'geometry'
-        )
-        gdf = gdf.set_crs(doc['epsg'])
-        status = await join_to_json(gdf, root)
-        if status == True:
-            result = await db_dataset.update_one(
-                {'_id': doc['_id']}, {'$set': {'job_status': 'COMPLETE'}}
-            )
-
-
-async def join_to_json(features, root_doc):
-    df_join = sjoin(features, regions.to_crs(features.crs.to_epsg()))
+def __add_infos_and_save_in_db__(args):
+    doc,regions_espg = args
+    logger.info(f'Add information in the document _id:{doc["_id"]}')
+    
+    gdf = gpd.GeoDataFrame.from_features([doc]).set_geometry(
+        'geometry'
+    )
+    gdf = gdf.set_crs(doc['epsg'])
+    
+    df_join = sjoin(gdf, regions_espg)
     epsg = df_join.crs.to_epsg()
-    dict_features = []
-    for row in df_join.iterfeatures():
-        lon, lat = row['geometry']['coordinates']
-        properties = row['properties']
-        root = {
-            **root_doc,
-            'gid': row['id'],
-            'biome': properties['regions_BIOMA'],
-            'lat': lat,
-            'lon': lon,
-            'epsg': epsg,
-            'municipally': properties['regions_MUNICIPIO'],
-            'state': properties['regions_ESTADO'],
-            'next_update': datetime.now() - timedelta(days=30),
-        }
-        dfields = {}
-        for column in features.columns:
-            if not column == 'geometry':
-                dfields[column] = properties[column]
-        root['dfields'] = dfields
-        f = Feature(**root)
-        logger.debug(f)
-        dict_features.append(f.mongo())
-
-    try:
-        result = await db_features.insert_many(dict_features)
-        return True
-    except:
-        logger.error(dict_features)
-        logger.exception('fala no load file')
-        return False
+    lon = doc['geometry']['coordinates'][0]
+    lat = doc['geometry']['coordinates'][1]
+    root = {
+        **doc,
+        'biome': df_join['regions_BIOMA'].iloc[0],
+        'lat': lat,
+        'lon': lon,
+        'epsg': epsg,
+        'municipally': df_join['regions_MUNICIPIO'].iloc[0],
+        'state': df_join['regions_ESTADO'].iloc[0],
+        'next_update': datetime.now() - timedelta(days=30),
+    }
+    
+    return Feature(**root).mongo()
+    
 
 
-if __name__ == '__main__':
-    join_to_json('/data/update/teste.zip')
+async def get_in_quee(): 
+    docs = [doc async for doc in db_features.find({'municipally': { '$exists': False }})]
+    if len(docs) > 0:
+        regions_new_crs = {}
+        epsgs = await db_features.distinct('epsg',{'municipally': { '$exists': False }})
+        for epsg in epsgs:
+            logger.debug(f"{epsg}")
+            regions_new_crs[epsg] = regions.to_crs(epsg)
+            
+        with Pool(cpu_count()-1) as works:
+            result_works = works.map(__add_infos_and_save_in_db__,[
+                (doc,regions_new_crs[doc['epsg']])
+               for doc in docs 
+            ]
+                                     )
+        for result in result_works:
+            logger.debug(f'Update document in MongoDB _id:{result["_id"]}')
+            await db_features.update_one({'_id':result["_id"]},{'$set':result})
+    else:
+        logger.info(f'Todos os dados foram processado')   
+    
+    
+        
+    
+        
+
+
