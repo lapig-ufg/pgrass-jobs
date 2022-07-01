@@ -16,7 +16,7 @@ async def get_point():
         
         logger.debug(f"run point_id {feature['point_id']}")
         coordinate = await get_sentinel2(feature['lon'], feature['lat'], feature['epsg'])
-        break
+        
         
         
        
