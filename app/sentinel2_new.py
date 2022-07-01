@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
 
 import rasterio
@@ -11,17 +11,21 @@ from app.config import logger
 from app.db import db_points, db_timeseires
 from app.fuctions import is_tif
 from app.model.functions import get_id_by_lon_lat
-from app.model.models import Feature, TimeSerie
+from app.model.models import Feature, TimeSerie, TimeSerieNew
 
 
 def read_pixel(asset, _datetime, url, lon, lat, epsg):
     transformer = Transformer.from_crs(
-        'epsg:{epsg}', f'epsg:32721', always_xy=True
+        f'epsg:{epsg}', f'epsg:32721', always_xy=True
     )
     lon_t, lat_t = transformer.transform(lon, lat)
     with rasterio.open(url) as ds:
         pixel_val = next(ds.sample([(lon_t, lat_t)]))
-        return (asset, (_datetime, pixel_val[0], url))
+        return {
+            'asset':asset, 
+            'datetime':_datetime, 
+            'value':pixel_val[0], 
+            'cog':url}
 
 
 def to_dict(args):
@@ -49,13 +53,35 @@ def to_dict(args):
                     logger.exception('Error in get data in pixel')
         except:
             logger.exception('Error is tif')
-    logger.info(f'Time {timeserires}')
+    logger.debug(f'Time {timeserires}')
     return timeserires
 
 
-async def get_sentinel2(lon, lat, epsg, date='2013-05-01'):
-    now = datetime.now()
+async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
+    
+    point_id = get_id_by_lon_lat(float(lon), float(lat), epsg)
     catalog_url = 'https://earth-search.aws.element84.com/v0'
+    root = {
+        'point_id':point_id,
+        'sattelite':'sentinel-s2-l2a-cogs',
+        'sensor':'',
+        'catalog_url':catalog_url
+    }
+    logger.debug(f'{root}')
+    
+    start = await db_timeseires.find_one(root, sort=[('datetime',-1)])
+    
+    if start is not None:
+        date_start = start['datetime'] + timedelta(days=1)
+        if(start['datetime'] - timedelta(days=15) < datetime.now() ):
+            logger.debug(f'This date has already been loaded to the _id:{point_id}')
+            return False
+        date = start['datetime'].strftime("%Y-%m-%d")
+    
+    
+    logger.debug(f'data inicial {date}')
+    now = datetime.now()
+    
     catalog = Client.open(catalog_url)
 
     # Image retrieval parameters
@@ -68,56 +94,15 @@ async def get_sentinel2(lon, lat, epsg, date='2013-05-01'):
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(cpu_count()) as works:
+    with Pool(cpu_count()-2) as works:
         list_timeseries = works.map(
             to_dict, [(item, lon, lat,epsg) for item in search.get_items()]
         )
 
-    point_id = get_id_by_lon_lat(float(lon), float(lat))
-    json_timeseries = {}
+    resutl = [TimeSerieNew(**root,**timeserie).mongo()  for timeseries in list_timeseries for timeserie in timeseries ]
+    
+    result2 = await db_timeseires.insert_many(resutl)
+    return True
 
-    for timeserie in list_timeseries:
-        for band, informations in timeserie:
-            try:
-                json_timeseries[band].append(informations)
-            except:
-                json_timeseries[band] = []
-
-    for band in json_timeseries.copy():
-        json_timeseries[band] = sorted(
-            json_timeseries[band], key=lambda tup: tup[0]
-        )
-    logger.debug(json_timeseries)
-    timesereis_final = []
-
-    for band in json_timeseries:
-
-        try:
-            tmp = TimeSerie(
-                point_id=point_id,
-                sattelite='sentinel-s2-l2a-cogs',
-                sensor='',
-                band_index=band,
-                datetimes=[
-                    information[0] for information in json_timeseries[band]
-                ],
-                values=[
-                    information[1] for information in json_timeseries[band]
-                ],
-                cogs=[information[2] for information in json_timeseries[band]],
-            )
-            try:
-                result2 = await db_timeseires.insert_one(tmp.mongo())
-                logger.debug(f"save in mongo {tmp['_id']}")
-            except DuplicateKeyError:
-                result2 = await db_timeseires.update_one(
-                    {'_id': tmp.id}, {'$set': tmp.mongo()}
-                )
-                logger.warning('TimeSerie exeiste')
-            except:
-                logger.exception('fall inset in mongodb')
-        except:
-            logger.warning(
-                [information[1] for information in json_timeseries[band]]
-            )
-            logger.exception('Time series not created')
+    
+    

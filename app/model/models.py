@@ -2,7 +2,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Union
 
-from bson import ObjectId
 from pydantic import Field, HttpUrl
 
 from app.db import MongoModel, PyObjectId
@@ -48,17 +47,13 @@ class Feature(MongoModel):
     point_id: PyObjectId = Field(default_factory=PyObjectId)
     lat: float
     lon: float
-    geometry: str = ''
+    geometry: dict
     epsg: int
-    dfields: Dict
-    next_update: datetime
+    properties: Dict
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.id = get_id(f'{self.file_name}{self.gid}')
-        self.point_id = get_id_by_lon_lat(self.lon, self.lat)
-        self.geometry = f'POINT ({self.lon:.5f} {self.lat:.5f}, {self.epsg})'
-
+        self.point_id = get_id_by_lon_lat(self.lon, self.lat, self.epsg )
 
 """
 	{
@@ -101,4 +96,21 @@ class TimeSerie(MongoModel):
         super().__init__(*a, **kw)
         self.id = get_id(
             f'{self.ts_source_id}{self.point_id}{self.sattelite}{self.band_index}{self.sensor}'
+        )
+
+class TimeSerieNew(MongoModel):
+    id: PyObjectId = Field(default_factory=PyObjectId)
+    point_id: PyObjectId = Field(default_factory=PyObjectId)
+    sattelite: SatelliteEnum
+    sensor:str
+    catalog_url:HttpUrl
+    asset:str
+    datetime:datetime 
+    value: Union[int, float]
+    cog:HttpUrl
+    
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        self.id = get_id(
+            f'{self.point_id}{self.sattelite}{self.sensor}{self.asset}{self.datetime}'
         )

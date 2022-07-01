@@ -1,11 +1,8 @@
-from datetime import datetime, timedelta
-import py
 
-import pytz
 from loguru import logger
 
-from app.db import PyObjectId, db_features, get_datetime_to_mongo
-from app.sentinel2 import get_sentinel2
+from app.db import PyObjectId, db_features
+from app.sentinel2_new import get_sentinel2
 
 
 async def get_point():
@@ -19,6 +16,7 @@ async def get_point():
         
         logger.debug(f"run point_id {feature['point_id']}")
         coordinate = await get_sentinel2(feature['lon'], feature['lat'], feature['epsg'])
+        break
         
         
        
