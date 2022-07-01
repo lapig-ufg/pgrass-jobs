@@ -22,10 +22,11 @@ def read_pixel(asset, _datetime, url, lon, lat, epsg):
     with rasterio.open(url) as ds:
         pixel_val = next(ds.sample([(lon_t, lat_t)]))
         return {
-            'asset':asset, 
-            'datetime':_datetime, 
-            'value':pixel_val[0], 
-            'cog':url}
+            'asset': asset,
+            'datetime': _datetime,
+            'value': pixel_val[0],
+            'cog': url,
+        }
 
 
 def to_dict(args):
@@ -39,7 +40,12 @@ def to_dict(args):
                 try:
                     timeserires.append(
                         read_pixel(
-                            asset, item.datetime, assets[asset].href, lon, lat, epsg
+                            asset,
+                            item.datetime,
+                            assets[asset].href,
+                            lon,
+                            lat,
+                            epsg,
                         )
                     )
                     logger.debug(
@@ -58,30 +64,31 @@ def to_dict(args):
 
 
 async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
-    
+
     point_id = get_id_by_lon_lat(float(lon), float(lat), epsg)
     catalog_url = 'https://earth-search.aws.element84.com/v0'
     root = {
-        'point_id':point_id,
-        'sattelite':'sentinel-s2-l2a-cogs',
-        'sensor':'',
-        'catalog_url':catalog_url
+        'point_id': point_id,
+        'sattelite': 'sentinel-s2-l2a-cogs',
+        'sensor': '',
+        'catalog_url': catalog_url,
     }
     logger.debug(f'{root}')
-    
-    start = await db_timeseires.find_one(root, sort=[('datetime',-1)])
-    
+
+    start = await db_timeseires.find_one(root, sort=[('datetime', -1)])
+
     if start is not None:
         date_start = start['datetime'] + timedelta(days=1)
-        if(date_start - timedelta(days=15) < datetime.now() ):
-            logger.debug(f'This date has already been loaded to the _id:{point_id}')
+        if date_start - timedelta(days=15) < datetime.now():
+            logger.debug(
+                f'This date has already been loaded to the _id:{point_id}'
+            )
             return False
-        date = date_start.strftime("%Y-%m-%d")
-    
-    
+        date = date_start.strftime('%Y-%m-%d')
+
     logger.debug(f'data inicial {date}')
     now = datetime.now()
-    
+
     catalog = Client.open(catalog_url)
 
     # Image retrieval parameters
@@ -94,15 +101,16 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(cpu_count()-2) as works:
+    with Pool(cpu_count() - 2) as works:
         list_timeseries = works.map(
-            to_dict, [(item, lon, lat,epsg) for item in search.get_items()]
+            to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
 
-    resutl = [TimeSerieNew(**root,**timeserie).mongo()  for timeseries in list_timeseries for timeserie in timeseries ]
-    
+    resutl = [
+        TimeSerieNew(**root, **timeserie).mongo()
+        for timeseries in list_timeseries
+        for timeserie in timeseries
+    ]
+
     result2 = await db_timeseires.insert_many(resutl)
     return True
-
-    
-    

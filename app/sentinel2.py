@@ -35,7 +35,12 @@ def to_dict(args):
                 try:
                     timeserires.append(
                         read_pixel(
-                            asset, item.datetime, assets[asset].href, lon, lat, epsg
+                            asset,
+                            item.datetime,
+                            assets[asset].href,
+                            lon,
+                            lat,
+                            epsg,
                         )
                     )
                     logger.debug(
@@ -70,7 +75,7 @@ async def get_sentinel2(lon, lat, epsg, date='2013-05-01'):
     logger.info(f'Chamando to_dict')
     with Pool(cpu_count()) as works:
         list_timeseries = works.map(
-            to_dict, [(item, lon, lat,epsg) for item in search.get_items()]
+            to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
 
     point_id = get_id_by_lon_lat(float(lon), float(lat))

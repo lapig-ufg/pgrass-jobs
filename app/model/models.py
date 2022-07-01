@@ -53,7 +53,8 @@ class Feature(MongoModel):
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.point_id = get_id_by_lon_lat(self.lon, self.lat, self.epsg )
+        self.point_id = get_id_by_lon_lat(self.lon, self.lat, self.epsg)
+
 
 """
 	{
@@ -98,17 +99,18 @@ class TimeSerie(MongoModel):
             f'{self.ts_source_id}{self.point_id}{self.sattelite}{self.band_index}{self.sensor}'
         )
 
+
 class TimeSerieNew(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId)
     point_id: PyObjectId = Field(default_factory=PyObjectId)
     sattelite: SatelliteEnum
-    sensor:str
-    catalog_url:HttpUrl
-    asset:str
-    datetime:datetime 
+    sensor: str
+    catalog_url: HttpUrl
+    asset: str
+    datetime: datetime
     value: Union[int, float]
-    cog:HttpUrl
-    
+    cog: HttpUrl
+
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.id = get_id(

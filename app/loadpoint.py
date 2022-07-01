@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-import py
 
+import py
 import pytz
 from loguru import logger
 
@@ -13,12 +13,11 @@ async def get_point():
     logger.debug('start point check')
 
     points = await db_features.distinct('point_id')
-    
+
     for point in points:
-        feature =  await db_features.find_one({'point_id':PyObjectId(point)})
-        
+        feature = await db_features.find_one({'point_id': PyObjectId(point)})
+
         logger.debug(f"run point_id {feature['point_id']}")
-        coordinate = await get_sentinel2(feature['lon'], feature['lat'], feature['epsg'])
-        
-        
-       
+        coordinate = await get_sentinel2(
+            feature['lon'], feature['lat'], feature['epsg']
+        )
