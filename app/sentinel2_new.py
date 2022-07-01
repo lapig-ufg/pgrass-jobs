@@ -73,10 +73,10 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
     
     if start is not None:
         date_start = start['datetime'] + timedelta(days=1)
-        if(start['datetime'] - timedelta(days=15) < datetime.now() ):
+        if(date_start - timedelta(days=15) < datetime.now() ):
             logger.debug(f'This date has already been loaded to the _id:{point_id}')
             return False
-        date = start['datetime'].strftime("%Y-%m-%d")
+        date = date_start.strftime("%Y-%m-%d")
     
     
     logger.debug(f'data inicial {date}')
