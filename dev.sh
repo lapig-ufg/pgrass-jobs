@@ -1,1 +1,1 @@
-pyinstrument -r html -o /data/pyprofile_job.html start_job.py 
+pyinstrument -r html -o /data/$(date '+%Y%m%d_%H%M%S')_pyprofile_job.html start_job.py 

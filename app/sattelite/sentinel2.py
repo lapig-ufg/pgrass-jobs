@@ -108,14 +108,9 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
 
     
     try:
-        for timeseries in list_timeseries:
-            
-            resutl = [
-                TimeSerieNew(**root, **timeserie).mongo()
-                for timeserie in timeseries
-            ]
-            logger.debug(f'Save TimeSerie len {len(resutl)}')
-            await db_timeseires.insert_many(resutl)
+        resutl = [TimeSerieNew(**root, **timeserie).mongo() for timeseries in list_timeseries for timeserie in timeseries]
+        logger.debug(f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}')
+        await db_timeseires.insert_many(resutl)
     except Exception as e:
         logger.exception(f'Errro!!! {e}')
     return True
