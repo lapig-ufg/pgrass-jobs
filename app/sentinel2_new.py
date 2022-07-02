@@ -59,7 +59,7 @@ def to_dict(args):
                     logger.exception('Error in get data in pixel')
         except:
             logger.exception('Error is tif')
-    logger.debug(f'Time {timeserires}')
+    logger.debug(f'Gerado To_dict')
     return timeserires
 
 
@@ -106,11 +106,16 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
             to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
 
-    resutl = [
-        TimeSerieNew(**root, **timeserie).mongo()
-        for timeseries in list_timeseries
-        for timeserie in timeseries
-    ]
-
-    result2 = await db_timeseires.insert_many(resutl)
+    
+    try:
+        for timeseries in list_timeseries:
+            
+            resutl = [
+                TimeSerieNew(**root, **timeserie).mongo()
+                for timeserie in timeseries
+            ]
+            logger.debug(f'Save TimeSerie len {len(resutl)}')
+            result2 = await db_timeseires.insert_many(resutl)
+    except:
+        logger.exception('Errro!!!')
     return True
