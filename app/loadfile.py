@@ -34,6 +34,7 @@ def __add_infos_and_save_in_db__(args):
 
     df_join = sjoin(gdf, regions_espg)
     del regions_espg
+    _id = doc['_id']
     epsg = df_join.crs.to_epsg()
     lon = doc['geometry']['coordinates'][0]
     lat = doc['geometry']['coordinates'][1]
@@ -47,16 +48,13 @@ def __add_infos_and_save_in_db__(args):
         'state': df_join['regions_ESTADO'].iloc[0],
         'next_update': datetime.now() - timedelta(days=30),
     }
-    del gdf, lon, lat, doc, epsg, df_join, doc
-    new_doc = Feature(**root).mongo()
-    client = client = MongoClient(settings.MONGODB_URL,maxPoolSize=10000)
-    db = client.pgrass
-    db.features.update_one(
-                {'_id': new_doc['_id']}, {'$set': new_doc}
-            )
-    del new_doc
+    del gdf, lon, lat, epsg, df_join, doc
+    return ( _id, Feature(**root).mongo())
+    
 
-
+async def save_buckt(buckets):
+    for _id, new_doc in buckets:
+        await db_features.update_one({'_id':_id},new_doc)
 
 async def get_in_quee():
     docs = [
@@ -72,11 +70,20 @@ async def get_in_quee():
             logger.debug(f'{epsg}')
             regions_new_crs[epsg] = regions.to_crs(epsg)
 
-        with Pool(cpu_count() - 1) as works:
-            works.map(
-                __add_infos_and_save_in_db__,
-                [(doc, regions_new_crs[doc['epsg']]) for doc in docs],
-            )
-       
+        bucket = []
+        for index, doc in enumerate(docs):
+            if index > 0 and index % 1000 != 0:
+                bucket.append((doc, regions_new_crs[doc['epsg']]))
+            else:
+                with Pool(cpu_count() - 1) as works:
+                    bucket_result = works.map( __add_infos_and_save_in_db__, bucket)
+                save_buckt(bucket_result)
+                bucket = []
+                
+        if len(bucket) > 0:
+            with Pool(cpu_count() - 1) as works:
+                bucket_result = works.map( __add_infos_and_save_in_db__, bucket)
+            save_buckt(bucket_result)
+        del docs, bucket
     else:
         logger.info(f'Todos os dados foram processado')
