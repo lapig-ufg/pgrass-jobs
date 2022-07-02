@@ -17,3 +17,5 @@ def test_get_id_by_lon_lat():
 def test_get_id_by_lon_lat_5_and_9_after_the_comma():
     assert get_id_by_lon_lat(1.11111,1.11111,1234) == PyObjectId('976347ab42193823d31c0c39')
     assert get_id_by_lon_lat(1.111111111,1.111111111,1234) == PyObjectId('976347ab42193823d31c0c39')
+    assert get_id_by_lon_lat(1.111111234,1.111111234,1234) == PyObjectId('976347ab42193823d31c0c39')
+    assert get_id_by_lon_lat(1.1,1.11111,1234) != get_id_by_lon_lat(1.1,1.11112,1234) 
