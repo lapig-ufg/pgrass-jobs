@@ -8,6 +8,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 pyprofile.html
+.vscode
 # C extensions
 *.so
 
