@@ -114,5 +114,5 @@ class TimeSerieNew(MongoModel):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         self.id = get_id(
-            f'{self.point_id}{self.sattelite}{self.sensor}{self.asset}{self.datetime}'
+            f'{self.point_id}{self.sattelite}{self.sensor}{self.asset}{self.cog}'
         )
