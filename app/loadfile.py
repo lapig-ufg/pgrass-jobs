@@ -25,7 +25,7 @@ regions = regions_tmp[
 regions = regions.set_geometry('regions_geometry')
 
 
-def __add_infos_to_doc(args):
+def __add_infos_to_doc__(args):
     doc, regions_espg = args
     logger.info(f'Add information in the document _id:{doc["_id"]}')
 
@@ -77,13 +77,13 @@ async def get_in_quee():
                 bucket.append((doc, regions_new_crs[doc['epsg']]))
             else:
                 with Pool(cpu_count() *2 ) as works:
-                    bucket_result = works.map( __add_infos_and_save_in_db__, bucket)
+                    bucket_result = works.map( __add_infos_to_doc__, bucket)
                 await save_buckt(bucket_result)
                 bucket = []
                 
         if len(bucket) > 0:
             with Pool(cpu_count() * 2) as works:
-                bucket_result = works.map( __add_infos_and_save_in_db__, bucket)
+                bucket_result = works.map( __add_infos_to_doc__, bucket)
             await save_buckt(bucket_result)
         del docs, bucket
     else:
