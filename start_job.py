@@ -2,7 +2,7 @@ import asyncio
 
 from app.db import client, teste
 from app.loadfile import get_in_quee
-from app.loadpoint_new import get_point
+from app.loadpoint import get_point
 
 if '__main__' == __name__:
 

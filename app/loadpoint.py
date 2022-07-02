@@ -1,11 +1,7 @@
-from datetime import datetime, timedelta
-
-import py
-import pytz
 from loguru import logger
 
-from app.db import PyObjectId, db_features, get_datetime_to_mongo
-from app.sentinel2 import get_sentinel2
+from app.db import PyObjectId, db_features
+from app.sattelite.sentinel2 import get_sentinel2
 
 
 async def get_point():
