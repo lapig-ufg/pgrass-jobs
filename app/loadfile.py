@@ -33,6 +33,7 @@ def __add_infos_and_save_in_db__(args):
     gdf = gdf.set_crs(doc['epsg'])
 
     df_join = sjoin(gdf, regions_espg)
+    del regions_espg
     epsg = df_join.crs.to_epsg()
     lon = doc['geometry']['coordinates'][0]
     lat = doc['geometry']['coordinates'][1]
@@ -46,7 +47,7 @@ def __add_infos_and_save_in_db__(args):
         'state': df_join['regions_ESTADO'].iloc[0],
         'next_update': datetime.now() - timedelta(days=30),
     }
-
+    del gdf, lon, lat, doc, epsg, df_join, doc
     return Feature(**root).mongo()
 
 
