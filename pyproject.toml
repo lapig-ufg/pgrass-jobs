@@ -27,6 +27,7 @@ pytest = "^7.1.2"
 pip-audit = "^2.3.4"
 isort = "^5.10.1"
 pyinstrument = "^4.1.1"
+coverage = "^6.4.1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
