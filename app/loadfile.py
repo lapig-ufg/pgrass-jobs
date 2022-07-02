@@ -85,6 +85,6 @@ async def get_in_quee():
             with Pool(cpu_count() * 2) as works:
                 bucket_result = works.map( __add_infos_to_doc__, bucket)
             await save_buckt(bucket_result)
-        del docs, bucket
+        del docs, bucket 
     else:
         logger.info(f'Todos os dados foram processado')
