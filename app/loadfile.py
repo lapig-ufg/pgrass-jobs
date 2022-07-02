@@ -33,7 +33,6 @@ def __add_infos_to_doc__(args):
     gdf = gdf.set_crs(doc['epsg'])
 
     df_join = sjoin(gdf, regions_espg)
-    del regions_espg
     _id = doc['_id']
     epsg = df_join.crs.to_epsg()
     lon = doc['geometry']['coordinates'][0]
@@ -48,8 +47,8 @@ def __add_infos_to_doc__(args):
         'state': df_join['regions_ESTADO'].iloc[0],
         'next_update': datetime.now() - timedelta(days=30),
     }
-    del gdf, lon, lat, epsg, df_join, doc
-    return ( _id, Feature(**root).mongo())
+    
+    return ( _id, {'$set':Feature(**root).mongo()})
     
 
 async def save_buckt(buckets):
@@ -73,10 +72,10 @@ async def get_in_quee():
 
         bucket = []
         for index, doc in enumerate(docs):
-            if index > 0 and index % 1000 != 0:
+            if index > 0 and index % 500 != 0:
                 bucket.append((doc, regions_new_crs[doc['epsg']]))
             else:
-                with Pool(cpu_count() *2 ) as works:
+                with Pool(cpu_count() * 2 ) as works:
                     bucket_result = works.map( __add_infos_to_doc__, bucket)
                 await save_buckt(bucket_result)
                 bucket = []
