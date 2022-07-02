@@ -101,7 +101,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(cpu_count() - 2) as works:
+    with Pool(cpu_count() * 3) as works:
         list_timeseries = works.map(
             to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
