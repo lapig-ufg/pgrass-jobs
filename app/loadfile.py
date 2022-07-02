@@ -1,12 +1,12 @@
-from cmath import log
+
 from datetime import datetime, timedelta
 from multiprocessing import Pool
 from os import cpu_count
-
+from pymongo import MongoClient
 import geopandas as gpd
 from geopandas.tools import sjoin
 
-from app.config import logger
+from app.config import logger, settings
 from app.db import db_features
 from app.model.models import Feature
 
@@ -48,7 +48,14 @@ def __add_infos_and_save_in_db__(args):
         'next_update': datetime.now() - timedelta(days=30),
     }
     del gdf, lon, lat, doc, epsg, df_join, doc
-    return Feature(**root).mongo()
+    new_doc = Feature(**root).mongo()
+    client = client = MongoClient(settings.MONGODB_URL,maxPoolSize=10000)
+    db = client.pgrass
+    db.features.update_one(
+                {'_id': new_doc['_id']}, {'$set': new_doc}
+            )
+    del new_doc
+
 
 
 async def get_in_quee():
@@ -66,14 +73,10 @@ async def get_in_quee():
             regions_new_crs[epsg] = regions.to_crs(epsg)
 
         with Pool(cpu_count() - 1) as works:
-            result_works = works.map(
+            works.map(
                 __add_infos_and_save_in_db__,
                 [(doc, regions_new_crs[doc['epsg']]) for doc in docs],
             )
-        for result in result_works:
-            logger.debug(f'Update document in MongoDB _id:{result["_id"]}')
-            await db_features.update_one(
-                {'_id': result['_id']}, {'$set': result}
-            )
+       
     else:
         logger.info(f'Todos os dados foram processado')
