@@ -54,6 +54,7 @@ def __add_infos_and_save_in_db__(args):
 
 async def save_buckt(buckets):
     for _id, new_doc in buckets:
+        logger.debug(f'Update _id:{_id}')
         await db_features.update_one({'_id':_id},new_doc)
 
 async def get_in_quee():
