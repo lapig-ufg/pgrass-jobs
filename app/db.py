@@ -51,8 +51,8 @@ class MongoModel(BaseModel):
         """We must convert _id into "id"."""
         if not data:
             return data
-        id = data.pop('_id', None)
-        return cls(**dict(data, id=id))
+        _id = data.pop('_id', None)
+        return cls(**dict(data, id=_id))
 
     def mongo(self, **kwargs):
         exclude_unset = kwargs.pop('exclude_unset', True)

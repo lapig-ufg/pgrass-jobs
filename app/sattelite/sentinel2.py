@@ -55,10 +55,10 @@ def to_dict(args):
                     logger.error(
                         f'url:{assets[asset].href} lon:{lon} lat:{lat} '
                     )
-                except:
-                    logger.exception('Error in get data in pixel')
-        except:
-            logger.exception('Error is tif')
+                except Exception as e:
+                    logger.exception(f'Error in get data in pixel {e}')
+        except Exception as e:
+            logger.exception('Error is tif {e}')
     logger.debug(f'Gerado To_dict')
     return timeserires
 
@@ -115,7 +115,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
                 for timeserie in timeseries
             ]
             logger.debug(f'Save TimeSerie len {len(resutl)}')
-            result2 = await db_timeseires.insert_many(resutl)
-    except:
-        logger.exception('Errro!!!')
+            await db_timeseires.insert_many(resutl)
+    except Exception as e:
+        logger.exception(f'Errro!!! {e}')
     return True
