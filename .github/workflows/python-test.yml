@@ -27,7 +27,7 @@ jobs:
         uses: codecov/codecov-action@v1
       - name: Create folder
         run: 
-          mkdir -p /data && chmod 775 /data
+          mkdir -p /data/logs && chmod 775 /data/logs
   code-quality:
     strategy:
       fail-fast: false
