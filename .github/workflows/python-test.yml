@@ -20,7 +20,7 @@ jobs:
         with:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Create folder
-        run: mkdir -p /data/logs && chown -R 1001:1001 /data/logs
+        run: sudo mkdir -p /data/logs && sudo chown -R 1001:1001 /data/logs
       - name: Install dependencies
         run: poetry install
       - name: Run tests
