@@ -8,4 +8,4 @@ if '__main__' == __name__:
 
     loop = client.get_io_loop()
     loop.run_until_complete(get_in_quee())
-    #loop.run_until_complete(get_point())
+    loop.run_until_complete(get_point())
