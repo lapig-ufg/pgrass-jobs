@@ -19,15 +19,15 @@ jobs:
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ matrix.poetry-version }}
+      - name: Create folder
+        run: mkdir -p /data/logs && chown -R 1001:1001 /data/logs
       - name: Install dependencies
         run: poetry install
       - name: Run tests
         run: poetry run pytest --cov=./ --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
-      - name: Create folder
-        run: 
-          mkdir -p /data/logs && chown -R 1001:1001 /data/logs
+      
   code-quality:
     strategy:
       fail-fast: false
