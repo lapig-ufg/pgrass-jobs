@@ -28,6 +28,9 @@ pip-audit = "^2.3.4"
 isort = "^5.10.1"
 pyinstrument = "^4.1.1"
 coverage = "^6.4.1"
+codecov = "^2.1.12"
+safety = "^2.0.0"
+bandit = "^1.7.4"
 
 [tool.pytest.ini_options]
 filterwarnings = [

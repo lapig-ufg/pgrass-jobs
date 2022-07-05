@@ -11,6 +11,4 @@ def test_is_tif():
     assert is_tif('https://HOME/FILE.TIF') == True
     assert is_tif('https://HOME/FILE.txt') == True
     assert is_tif('ftps://HOME/FILE.tiff') == True
-    assert is_tif('ftps://HOME/FILE.txt')  == False
-    
-   
+    assert is_tif('ftps://HOME/FILE.txt') == False

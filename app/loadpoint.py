@@ -13,6 +13,4 @@ async def get_point():
         feature = await db_features.find_one({'point_id': PyObjectId(point)})
 
         logger.debug(f"run point_id {feature['point_id']}")
-        await get_sentinel2(
-            feature['lon'], feature['lat'], feature['epsg']
-        )
+        await get_sentinel2(feature['lon'], feature['lat'], feature['epsg'])

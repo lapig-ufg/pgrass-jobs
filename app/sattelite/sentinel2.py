@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from multiprocessing import Pool
 
 import rasterio
-
 from pyproj import Transformer
 from pystac_client import Client
 from rasterio._err import CPLE_HttpResponseError
@@ -106,10 +105,15 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
             to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
 
-    
     try:
-        resutl = [TimeSerieNew(**root, **timeserie).mongo() for timeseries in list_timeseries for timeserie in timeseries]
-        logger.debug(f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}')
+        resutl = [
+            TimeSerieNew(**root, **timeserie).mongo()
+            for timeseries in list_timeseries
+            for timeserie in timeseries
+        ]
+        logger.debug(
+            f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}'
+        )
         await db_timeseires.insert_many(resutl)
     except Exception as e:
         logger.exception(f'Errro!!! {e}')
