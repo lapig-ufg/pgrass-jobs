@@ -50,5 +50,3 @@ jobs:
         run: poetry run isort . --check-only
       - name: Run bandit
         run: poetry run bandit .
-      - name: Run saftey
-        run: poetry run safety check
