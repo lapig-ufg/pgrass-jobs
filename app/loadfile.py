@@ -49,7 +49,7 @@ def __add_infos_to_doc__(dataset_id,docs,columns,epsg ):
     gdf = gdf.set_crs(epsg)
 
     df_join = sjoin(gdf, regions_espg)
-    with Pool(cpu_count()-1) as work:   
+    with Pool(cpu_count()-2) as work:   
         result = work.map(create_feture, [(row,epsg ) for row in df_join.iterfeatures()])
     
     return  result

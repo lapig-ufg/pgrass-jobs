@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 
 import rasterio
-from pymongo.errors import DuplicateKeyError
+
 from pyproj import Transformer
 from pystac_client import Client
 from rasterio._err import CPLE_HttpResponseError
 
-from app.config import logger
-from app.db import db_points, db_timeseires
+from app.config import logger, settings
+from app.db import db_timeseires
 from app.fuctions import is_tif
 from app.model.functions import get_id_by_lon_lat
 from app.model.models import Feature, TimeSerie, TimeSerieNew
@@ -101,7 +101,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(cpu_count() * 3) as works:
+    with Pool(settings.CORE_TO_DOWNLOAD) as works:
         list_timeseries = works.map(
             to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
         )
