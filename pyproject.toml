@@ -31,6 +31,7 @@ coverage = "^6.4.1"
 codecov = "^2.1.12"
 safety = "^2.0.0"
 bandit = "^1.7.4"
+pytest-cov = "^3.0.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
