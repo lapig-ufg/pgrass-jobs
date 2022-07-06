@@ -51,7 +51,7 @@ def __add_infos_to_doc__(dataset_id, docs, columns, epsg):
     logger.info(f'Doing the sjoin in the document _id:{dataset_id}')
     df_join = sjoin(gdf, regions_espg)
     logger.info(f'FINISHED the sjoin in the document _id:{dataset_id}')
-    
+
     with Pool(cpu_count() - 2) as work:
         result = work.map(
             create_feture, [(row, epsg) for row in df_join.iterfeatures()]
@@ -83,7 +83,7 @@ async def get_in_quee():
                     dataset_id, **document[dataset_id]
                 )
 
-                for _id, values in feature_update:
+                async for _id, values in feature_update:
                     logger.debug(f'save in db {_id}')
                     await db_features.update_one(_id, values)
 
