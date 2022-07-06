@@ -83,7 +83,7 @@ async def get_in_quee():
                     dataset_id, **document[dataset_id]
                 )
 
-                async for _id, values in feature_update:
+                for _id, values in feature_update:
                     logger.debug(f'save in db {_id}')
                     await db_features.update_one(_id, values)
 
