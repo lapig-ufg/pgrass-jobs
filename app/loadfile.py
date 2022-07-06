@@ -48,8 +48,10 @@ def __add_infos_to_doc__(dataset_id, docs, columns, epsg):
 
     gdf = gpd.GeoDataFrame.from_features(docs).set_geometry('geometry')
     gdf = gdf.set_crs(epsg)
-
+    logger.info(f'Doing the sjoin in the document _id:{dataset_id}')
     df_join = sjoin(gdf, regions_espg)
+    logger.info(f'FINISHED the sjoin in the document _id:{dataset_id}')
+    
     with Pool(cpu_count() - 2) as work:
         result = work.map(
             create_feture, [(row, epsg) for row in df_join.iterfeatures()]
