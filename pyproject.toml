@@ -38,6 +38,7 @@ pytest-discord = "^0.1.1"
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
+discord_verbose = 1
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
