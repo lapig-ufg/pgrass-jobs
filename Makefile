@@ -15,4 +15,5 @@ ptest:
 run:
 	sh start.sh
 psec:
+	@poetry run safety check
 	@poetry run pip-audit
