@@ -11,15 +11,22 @@ from app.db import db_timeseires
 from app.fuctions import is_tif
 from app.model.functions import get_id_by_lon_lat
 from app.model.models import Feature, TimeSerie, TimeSerieNew
+from functools import lru_cache
 
 
-def read_pixel(asset, _datetime, url, lon, lat, epsg):
+@lru_cache(maxsize=512)
+def __transformer(lon,lat, point_epsg,raster_epsg):
     transformer = Transformer.from_crs(
-        f'epsg:{epsg}', f'epsg:32721', always_xy=True
+        f'epsg:{point_epsg}', f'{raster_epsg}', always_xy=True
     )
-    lon_t, lat_t = transformer.transform(lon, lat)
+    return transformer.transform(lon, lat)
+
+
+def read_pixel(asset, _datetime, url, lon, lat, epsg): 
     with rasterio.open(url) as ds:
+        lon_t, lat_t = __transformer(lon, lat, epsg, ds.crs['init'])
         pixel_val = next(ds.sample([(lon_t, lat_t)]))
+        logger.debug(f"band:{asset}, cog:{url}, cood([{lon}, {lon_t} ], [{lat}, {lat_t} ], {epsg}), pixel:{pixel_val}")
         return {
             'asset': asset,
             'datetime': _datetime,

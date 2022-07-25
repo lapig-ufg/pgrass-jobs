@@ -19,10 +19,10 @@ rotation = '500 MB'
 if os.environ.get('LAPIG_ENV') == 'production':
     logger.remove()
     logger.add(sys.stderr, level='INFO', format=confi_format)
-
-
-logger.add('/data/logs/jobs/jobs.log')
-logger.add('/data/logs/jobs/jobs_WARNING.log', level='WARNING')
+    logger.add('/data/logs/jobs/jobs.log', rotation='500 MB', level='INFO')
+else:
+   logger.add('/data/logs/jobs/jobsDEV.log', rotation='500 MB') 
+logger.add('/data/logs/jobs/jobs_WARNING.log', rotation='500 MB', level='WARNING')
 
 settings = Dynaconf(
     envvar_prefix='PGRASS',
