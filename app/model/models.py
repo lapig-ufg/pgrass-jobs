@@ -81,6 +81,8 @@ class Feature(MongoModel):
 """
 
 
+
+
 class TimeSerie(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
     ts_source_id: int
@@ -107,7 +109,7 @@ class TimeSerieNew(MongoModel):
     catalog_url: HttpUrl
     asset: str
     datetime: datetime
-    value: Union[int, float]
+    value: Union[List[Union[int,float]],int, float]
     cog: HttpUrl
 
     def __init__(self, *a, **kw):
