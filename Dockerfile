@@ -32,7 +32,7 @@ WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry install $(test "$LAPIG_ENV" == production && echo "--no-dev") --no-interaction --no-ansi
+RUN poetry install --no-dev --no-interaction --no-ansi
 
 ###############################################
 # Production Image
@@ -48,3 +48,6 @@ ENV BRANCH="main"
 
 RUN apt-get update && apt-get install -y git make && mkdir -p /APP && cd /APP && git clone -b ${BRANCH} ${URL_TO_APPLICATION_GITHUB} && \
     rm -rf /var/lib/apt/lists/*
+
+
+CMD sh -c "cd /APP/pgrass-jobs && python start_sched.py"
