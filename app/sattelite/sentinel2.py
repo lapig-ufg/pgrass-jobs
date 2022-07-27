@@ -72,7 +72,7 @@ def to_dict(args):
     return timeserires
 
 
-async def get_sentinel2(collection ,lon, lat, epsg, date='2022-06-15'):
+async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUERY):
 
     point_id = get_id_by_lon_lat(lon, lat, epsg)
     catalog_url = 'https://earth-search.aws.element84.com/v0'
