@@ -1,4 +1,4 @@
 [default]
 MONGODB_URL = 'mongodb://localhost:27017'
 CORE_TO_DOWNLOAD = 24 # This task is light so the name of cores can be longer than that of the processor
-SCHEDULER_TIME = 15
+SCHEDULER_TIME = 1
