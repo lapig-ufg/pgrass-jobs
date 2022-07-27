@@ -1,11 +1,11 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta
+from app.config import logger, settings
 import motor.motor_asyncio
 import pytz
 from bson import ObjectId
 from pydantic import BaseConfig, BaseModel
-
-from .config import settings
+import pymongo
+from requests import get
 
 client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
 
@@ -15,7 +15,38 @@ db_points = db.points
 db_timeseires = db.timeseires
 db_features = db.features
 db_dataset = db.dataset
-teste = db.teste
+db_point_status = db.point_status
+db_collections = db.collections
+
+async def add_metadata_collections(url):
+    try:
+        collection = get(url).json()
+        if '_id' not in collection and 'id' in collection:
+            collection['_id'] = collection.pop('id')
+        await db.collections.insert_one(collection)
+        logger.debug(f'Collection add {url}')
+    except pymongo.errors.DuplicateKeyError:
+        ...
+    
+
+async def schedule_next_update(point_id,collection,next_update=datetime.now()):
+    next_update = (next_update.replace(
+        hour=23,
+        minute=59,
+        second=59, 
+        microsecond=0
+        ) + timedelta(days=15)).astimezone(pytz.utc).isoformat()
+    try:
+        await db_point_status.insert_one({'_id':point_id,collection:next_update})
+        logger.debug(f'_id:{point_id} collection:{next_update}')
+    except pymongo.errors.DuplicateKeyError:
+        logger.debug(f'_id:{point_id} collection:{next_update}')
+        await db_point_status.update_one( {'_id':point_id},{'$set':{collection:next_update}})
+        
+    
+    
+
+
 
 
 def get_datetime_to_mongo():

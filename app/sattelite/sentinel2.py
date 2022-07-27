@@ -7,10 +7,10 @@ from pystac_client import Client
 from rasterio._err import CPLE_HttpResponseError
 
 from app.config import logger, settings
-from app.db import db_timeseires
+from app.db import db_timeseires, schedule_next_update
 from app.fuctions import is_tif
 from app.model.functions import get_id_by_lon_lat
-from app.model.models import Feature, TimeSerie, TimeSerieNew
+from app.model.models import TimeSerie
 from functools import lru_cache
 
 
@@ -72,15 +72,13 @@ def to_dict(args):
     return timeserires
 
 
-async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
+async def get_sentinel2(collection ,lon, lat, epsg, date='2022-06-15'):
 
-    point_id = get_id_by_lon_lat(float(lon), float(lat), epsg)
+    point_id = get_id_by_lon_lat(lon, lat, epsg)
     catalog_url = 'https://earth-search.aws.element84.com/v0'
     root = {
         'point_id': point_id,
-        'sattelite': 'sentinel-s2-l2a-cogs',
-        'sensor': '',
-        'catalog_url': catalog_url,
+        'collection': collection,
     }
     logger.debug(f'{root}')
 
@@ -92,6 +90,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
             logger.debug(
                 f'This date has already been loaded to the _id:{point_id}'
             )
+            await schedule_next_update(**root,next_update=date_start)
             return False
         date = date_start.strftime('%Y-%m-%d')
 
@@ -105,7 +104,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
     dates = f'{date}/{now.strftime("%Y-%m-%d")}'
 
     search = catalog.search(
-        collections=['sentinel-s2-l2a-cogs'],
+        collections=[collection],
         intersects=intersects_dict,
         datetime=dates,
     )
@@ -117,7 +116,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
 
     try:
         resutl = [
-            TimeSerieNew(**root, **timeserie).mongo()
+            TimeSerie(**root, **timeserie).mongo()
             for timeseries in list_timeseries
             for timeserie in timeseries
         ]
@@ -125,6 +124,7 @@ async def get_sentinel2(lon, lat, epsg, date='2000-06-15'):
             f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}'
         )
         await db_timeseires.insert_many(resutl)
+        await schedule_next_update(**root)
     except Exception as e:
         logger.exception(f'Errro!!! {e}')
     return True

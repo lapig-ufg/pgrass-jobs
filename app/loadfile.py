@@ -33,9 +33,9 @@ def create_feture(args):
         'biome': properties['regions_BIOMA'],
         'municipally': properties['regions_MUNICIPIO'],
         'state': properties['regions_ESTADO'],
-        'lat': lat,
         'lon': lon,
-        'point_id': get_id_by_lon_lat(lat, lon, epsg),
+        'lat': lat,
+        'point_id': get_id_by_lon_lat(lon,lat, epsg),
     }
 
     logger.debug(f'update in db {_id}')

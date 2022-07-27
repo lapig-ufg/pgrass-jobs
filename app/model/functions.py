@@ -1,10 +1,11 @@
+from asyncio.log import logger
 from hashlib import shake_256
 
-from app.db import PyObjectId
+from app.db import ObjectId
 
 
-def get_id(string: str) -> PyObjectId:
-    return PyObjectId(shake_256(string.encode()).hexdigest(12))
+def get_id(string: str) -> ObjectId:
+    return ObjectId(shake_256(string.encode()).hexdigest(12))
 
 
 def get_id_by_lon_lat(lon, lat, epsg):
