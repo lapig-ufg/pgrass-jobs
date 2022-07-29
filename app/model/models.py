@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 from pydantic import Field, HttpUrl
 from pymongo import MongoClient
-from app.config import settings
+from app.config import settings, logger
 from app.db import MongoModel, PyObjectId
 from app.model.functions import get_id, get_id_by_lon_lat
 
@@ -22,10 +22,10 @@ class JobStatusEnum(str, Enum):
 
 def create_enum_collections():
     collections = {}
-    client = MongoClient(settings.MONGODB_URL)
-    db = client.pgrass
-    for collection in db.collections.find({},{'title'}):
-        collections[collection['_id']] = collection['_id']
+    with MongoClient(settings.MONGODB_URL) as client:
+        db = client.pgrass
+        for collection in db.collections.find({},{'title'}):
+            collections[collection['_id']] = collection['_id']
     return collections
 
 def make_enum(name, values):
@@ -33,7 +33,10 @@ def make_enum(name, values):
     class TheEnum(str, Enum):
         nonlocal _k, _v
         for _k, _v in values.items():
-            locals()[_k] = _v
+            try:
+                locals()[_k] = _v
+            except:
+                logger.exception('Make enum')
     TheEnum.__name__ = name
     return TheEnum        
 
