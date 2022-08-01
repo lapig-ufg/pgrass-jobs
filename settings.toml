@@ -3,3 +3,6 @@ MONGODB_URL = 'mongodb://localhost:27017'
 CORE_TO_DOWNLOAD = 24 # This task is light so the name of cores can be longer than that of the processor
 SCHEDULER_TIME = 1
 DATE_START_QUERY = '1900-01-01'
+COLLECTIONS = [
+    'https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs'
+    ]
