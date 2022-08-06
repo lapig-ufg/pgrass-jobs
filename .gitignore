@@ -181,3 +181,7 @@ Cargo.lock
 *.pdb
 
 # End of https://www.toptal.com/developers/gitignore/api/python,rust
+
+# Freeze File Jenkinsfile
+freeze = update-index --assume-unchanged
+git freeze Jenkinsfile
