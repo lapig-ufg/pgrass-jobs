@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+      
+      pgrass-jobs:
+        build: .
+        hostname: pgrass-jobs
+        container_name: pgrass-jobs
+        privileged: true
+        restart: always
+        stdin_open: true
+        tty: true
+        volumes:
+          - '../:/APP/pgrass-jobs'
+          - './data/:/data'
+          - '/etc/localtime:/etc/localtime'
+          - './env-example:/APP/.env'
