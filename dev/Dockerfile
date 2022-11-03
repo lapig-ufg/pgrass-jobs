@@ -51,4 +51,4 @@ RUN apt-get update && \
     mkdir -p /APP && cd /APP && \
     chmod +x /APP/entrypoint.sh
 
-#ENTRYPOINT [ "/APP/entrypoint.sh"]
+ENTRYPOINT [ "/APP/entrypoint.sh"]
