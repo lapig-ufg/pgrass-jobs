@@ -12,6 +12,9 @@ pyprofile.html
 # C extensions
 *.so
 
+*.Jenkinsfile
+*.Dockerfile
+
 # Distribution / packaging
 .Python
 build/
