@@ -69,7 +69,7 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(26) as works:
+    with Pool(settings.CORE_TO_STAC) as works:
         list_timeseries = works.map(
             responce, [item for item in search.get_items()]
         )

@@ -1,6 +1,7 @@
 [default]
 MONGODB_URL = 'mongodb://localhost:27017'
 CORE_TO_DOWNLOAD = 24 # This task is light so the name of cores can be longer than that of the processor
+CORE_TO_STAC = 80
 SCHEDULER_TIME = 1
 DATE_START_QUERY = '1900-01-01'
 COLLECTIONS = [
