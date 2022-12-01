@@ -50,7 +50,7 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
             logger.debug(
                 f'This date has already been loaded to the _id:{point_id}'
             )
-            await schedule_next_update(**root,next_update=date_start)
+            await schedule_next_update(point_id,collection,next_update=date_start)
             return False
         date = date_start.strftime('%Y-%m-%d')
 
@@ -86,7 +86,7 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
             f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}'
         )
         await db_timeseires.insert_many(resutl)
-        await schedule_next_update(**root)
+        await schedule_next_update(point_id,collection)
     except Exception as e:
         logger.exception(f'Errro!!! {e}')
         return False
