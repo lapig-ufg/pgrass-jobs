@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from multiprocessing import Pool
 
-import rasterio
-from pyproj import Transformer
 from pystac_client import Client
 from rasterio._err import CPLE_HttpResponseError
 
@@ -11,66 +9,24 @@ from app.db import db_timeseires, schedule_next_update
 from app.fuctions import is_tif
 from app.model.functions import get_id_by_lon_lat
 from app.model.models import TimeSerie
-from functools import lru_cache
 
 
-@lru_cache(maxsize=512)
-def __transformer(lon,lat, point_epsg,raster_epsg):
-    transformer = Transformer.from_crs(
-        f'epsg:{point_epsg}', f'{raster_epsg}', always_xy=True
-    )
-    return transformer.transform(lon, lat)
 
-
-def read_pixel(asset, _datetime, url, lon, lat, epsg): 
-    with rasterio.open(url) as ds:
-        lon_t, lat_t = __transformer(lon, lat, epsg, ds.crs['init'])
-        pixel_val = (next(ds.sample([(lon_t, lat_t)]))).tolist()
-        logger.debug(f"band:{asset}, cog:{url}, cood([{lon}, {lon_t} ], [{lat}, {lat_t} ], {epsg}), pixel:{pixel_val}")
-        if len(pixel_val) == 1:
-            pixel_val = pixel_val[0]
-        
-        return {
-            'asset': asset,
-            'datetime': _datetime,
-            'value': pixel_val,
-            'cog': url,
-        }
-
-
-def to_dict(args):
-    item, lon, lat, epsg = args
-    assets = item.get_assets()
-    timeserires = []
-
+def responce(x):
+    assets = x.get_assets()
+    _datetime = x.datetime
+    del x
+    arr = []
     for asset in assets:
-        try:
-            if is_tif(assets[asset].href):
-                try:
-                    timeserires.append(
-                        read_pixel(
-                            asset,
-                            item.datetime,
-                            assets[asset].href,
-                            lon,
-                            lat,
-                            epsg,
-                        )
-                    )
-                    logger.debug(
-                        f'cooder:{(lon,lat,epsg)} url:{assets[asset].href}'
-                    )
-                except CPLE_HttpResponseError:
-                    logger.error(
-                        f'url:{assets[asset].href} lon:{lon} lat:{lat} '
-                    )
-                except Exception as e:
-                    logger.exception(f'Error in get data in pixel {e}')
-        except Exception as e:
-            logger.exception('Error is tif {e}')
-    logger.debug(f'Gerado To_dict')
-    return timeserires
-
+        url = assets[asset].href
+        if is_tif(url):
+            arr.append( {
+                'asset': asset,
+                'datetime': _datetime,
+                'cog':url
+             })
+    return arr
+    
 
 async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUERY):
 
@@ -79,6 +35,9 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
     root = {
         'point_id': point_id,
         'collection': collection,
+        'lon':lon,
+        'lat':lat,
+        'epsg':epsg
     }
     logger.debug(f'{root}')
 
@@ -86,7 +45,8 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
 
     if start is not None:
         date_start = start['datetime'] + timedelta(days=1)
-        if date_start - timedelta(days=15) < datetime.now():
+        
+        if (date_start - datetime.now()).days > -30:
             logger.debug(
                 f'This date has already been loaded to the _id:{point_id}'
             )
@@ -109,17 +69,19 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
         datetime=dates,
     )
     logger.info(f'Chamando to_dict')
-    with Pool(settings.CORE_TO_DOWNLOAD) as works:
+    with Pool(26) as works:
         list_timeseries = works.map(
-            to_dict, [(item, lon, lat, epsg) for item in search.get_items()]
+            responce, [item for item in search.get_items()]
         )
+    del search
+    
+    def get_TimeSerie(list_timeseries):
+        for timeseries in list_timeseries:
+            for timeserie in timeseries:
+                yield TimeSerie(**root, **timeserie).mongo()
 
     try:
-        resutl = [
-            TimeSerie(**root, **timeserie).mongo()
-            for timeseries in list_timeseries
-            for timeserie in timeseries
-        ]
+        resutl = [i for i in get_TimeSerie(list_timeseries)]
         logger.debug(
             f'Save TimeSerie len {len(resutl)} point_id:{resutl[0]["point_id"]}'
         )
@@ -127,4 +89,6 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
         await schedule_next_update(**root)
     except Exception as e:
         logger.exception(f'Errro!!! {e}')
+        return False
+        
     return True

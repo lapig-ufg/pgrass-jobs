@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 from pydantic import Field, HttpUrl
 from pymongo import MongoClient
@@ -66,10 +66,13 @@ class Feature(MongoModel):
 class TimeSerie(MongoModel):
     id: PyObjectId = Field(default_factory=PyObjectId)
     point_id: PyObjectId = Field(default_factory=PyObjectId)
-    collection: CollectionsEnum
+    collection: str
     asset: str
     datetime: datetime
-    value: Union[List[Union[int,float]],int, float]
+    lon: Optional[float]
+    lat: Optional[float]
+    epsg: Optional[int]
+    value: Optional[Union[List[Union[int,float]],int, float]]
     cog: HttpUrl
 
     def __init__(self, *a, **kw):

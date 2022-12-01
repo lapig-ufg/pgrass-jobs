@@ -40,7 +40,7 @@ async def schedule_next_update(point_id,collection,next_update=datetime.now()):
         await db_point_status.insert_one({'_id':point_id,collection:next_update})
         logger.debug(f'_id:{point_id} collection:{next_update}')
     except pymongo.errors.DuplicateKeyError:
-        logger.debug(f'_id:{point_id} collection:{next_update}')
+        logger.debug(f'update _id:{point_id} collection:{next_update}')
         await db_point_status.update_one( {'_id':point_id},{'$set':{collection:next_update}})
         
     
