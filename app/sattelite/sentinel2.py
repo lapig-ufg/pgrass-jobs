@@ -74,7 +74,7 @@ async def get_sentinel2(collection ,lon, lat, epsg, date=settings.DATE_START_QUE
             responce, [item for item in search.get_items()]
         )
     del search
-    logger.info(f'Chamando to_dict {point_id}')
+    logger.info(f'Fim to_dict {point_id}')
     def get_TimeSerie(list_timeseries):
         for timeseries in list_timeseries:
             for timeserie in timeseries:
